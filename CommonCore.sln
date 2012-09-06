@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Base", "Base\Base.csproj", "{548E35E2-508A-4B82-A719-B6417C1D2E13}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cache", "Cache\Cache.csproj", "{8D70CDAC-C87F-4882-AC80-1BC9D427589E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Collections", "Collections\Collections.csproj", "{81C5A8C6-38B4-4289-A770-7D445BDF9034}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{548E35E2-508A-4B82-A719-B6417C1D2E13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{548E35E2-508A-4B82-A719-B6417C1D2E13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{548E35E2-508A-4B82-A719-B6417C1D2E13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{548E35E2-508A-4B82-A719-B6417C1D2E13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D70CDAC-C87F-4882-AC80-1BC9D427589E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D70CDAC-C87F-4882-AC80-1BC9D427589E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D70CDAC-C87F-4882-AC80-1BC9D427589E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D70CDAC-C87F-4882-AC80-1BC9D427589E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81C5A8C6-38B4-4289-A770-7D445BDF9034}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81C5A8C6-38B4-4289-A770-7D445BDF9034}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81C5A8C6-38B4-4289-A770-7D445BDF9034}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81C5A8C6-38B4-4289-A770-7D445BDF9034}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

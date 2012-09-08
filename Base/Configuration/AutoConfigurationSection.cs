@@ -8,19 +8,22 @@ using System.Reflection;
 
 namespace CommonCore.Configuration
 {
-	/// <summary>
-	/// A <see cref="System.Configuration.ConfigurationSection"/> which uses  <see cref="System.Configuration.ConfigurationPropertyAttribute"/>
-	/// attributes on properties to automatically read from and write to an inheriting configuration section.
-	/// </summary>
-	public abstract class AutoConfigurationSection : ConfigurationSection
+	internal class AutoConfigurationHelper
 	{
 		private static readonly ConcurrentDictionary<Type, Dictionary<ConfigurationProperty, PropertyInfo>> _TypeProperties =
 			new ConcurrentDictionary<Type, Dictionary<ConfigurationProperty, PropertyInfo>>();
 		private readonly Dictionary<ConfigurationProperty, PropertyInfo> _Properties;
+		private readonly ConfigurationElement _ConfigElement;
+		private readonly Action<ConfigurationProperty, object> _ValueSetter;
+		private readonly Func<ConfigurationProperty, object> _ValueGetter;
 
-		protected AutoConfigurationSection()
+		internal AutoConfigurationHelper(ConfigurationElement element, Action<ConfigurationProperty, object> valueSetter, Func<ConfigurationProperty, object> valueGetter)
 		{
-			var type = GetType();
+			_ConfigElement = element;
+			_ValueSetter = valueSetter;
+			_ValueGetter = valueGetter;
+
+			var type = element.GetType();
 			Dictionary<ConfigurationProperty, PropertyInfo> properties;
 			if (!_TypeProperties.TryGetValue(type, out properties))
 			{
@@ -38,32 +41,55 @@ namespace CommonCore.Configuration
 			}
 			_Properties = properties;
 
-			// Pre-initialize properties of type ConfigurationElementCollection, or things go boom
+			// Pre-initialize properties of type ConfigurationElement, or things go boom
 			foreach (var property in _Properties)
 			{
-				if (typeof(ConfigurationElementCollection).IsAssignableFrom(property.Value.PropertyType))
-					property.Value.SetValue(this, this[property.Key], null);
+				if (typeof(ConfigurationElement).IsAssignableFrom(property.Value.PropertyType))
+					property.Value.SetValue(_ConfigElement, _ValueGetter(property.Key), null);
 			}
+		}
+
+		internal void PostDeserialize()
+		{
+			foreach (var property in _Properties)
+			{
+				property.Value.SetValue(_ConfigElement, _ValueGetter(property.Key), null);
+			}
+		}
+
+		internal void PreSerialize(System.Xml.XmlWriter writer)
+		{
+			foreach (var property in _Properties)
+			{
+				_ValueSetter(property.Key, property.Value.GetValue(_ConfigElement, null));
+			}
+		}
+	}
+
+	/// <summary>
+	/// A <see cref="System.Configuration.ConfigurationSection"/> which uses  <see cref="System.Configuration.ConfigurationPropertyAttribute"/>
+	/// attributes on properties to automatically read from and write to an inheriting configuration section.
+	/// </summary>
+	public abstract class AutoConfigurationSection : ConfigurationSection
+	{
+		private readonly AutoConfigurationHelper _AutoConfigHelper;
+		protected AutoConfigurationSection()
+		{
+			_AutoConfigHelper = new AutoConfigurationHelper(this, (c, v) => this[c] = v, c => this[c]);
 		}
 
 		protected override void PostDeserialize()
 		{
 			base.PostDeserialize();
 
-			foreach (var property in _Properties)
-			{
-				property.Value.SetValue(this, this[property.Key], null);
-			}
+			_AutoConfigHelper.PostDeserialize();
 		}
 
 		protected override void PreSerialize(System.Xml.XmlWriter writer)
 		{
 			base.PreSerialize(writer);
 
-			foreach (var property in _Properties)
-			{
-				this[property.Key] = property.Value.GetValue(this, null);
-			}
+			_AutoConfigHelper.PreSerialize(writer);
 		}
 	}
 }

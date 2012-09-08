@@ -8,6 +8,10 @@ using System.Reflection;
 
 namespace CommonCore.Configuration
 {
+	/// <summary>
+	/// A <see cref="System.Configuration.ConfigurationSection"/> which uses  <see cref="System.Configuration.ConfigurationPropertyAttribute"/>
+	/// attributes on properties to automatically read from and write to an inheriting configuration section.
+	/// </summary>
 	public abstract class AutoConfigurationSection : ConfigurationSection
 	{
 		private static readonly ConcurrentDictionary<Type, Dictionary<ConfigurationProperty, PropertyInfo>> _TypeProperties =

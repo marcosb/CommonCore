@@ -6,11 +6,16 @@ using System.Text;
 
 namespace CommonCore.Collections
 {
+	/// <summary>
+	/// Converts a <see cref="System.Collections.Generic.Collection{T}"/>
+	/// </summary>
+	/// <typeparam name="TKey"></typeparam>
+	/// <typeparam name="TValue"></typeparam>
 	public class DictionaryEnumeratorWrapper<TKey, TValue> : IDictionaryEnumerator
 	{
 		private readonly IEnumerator<KeyValuePair<TKey, TValue>> _Source;
 
-		public DictionaryEnumeratorWrapper(IEnumerable<KeyValuePair<TKey, TValue>> source)
+		internal DictionaryEnumeratorWrapper(IEnumerable<KeyValuePair<TKey, TValue>> source)
 		{
 			_Source = source.GetEnumerator();
 		}

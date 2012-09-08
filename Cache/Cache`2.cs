@@ -9,6 +9,9 @@ using CommonCore.Collections;
 
 namespace CommonCore.Cache
 {
+	/**
+	 * A simple thread-safe cache which maps a key of type TKey to a value of type TValue.
+	 */
 	public class Cache<TKey, TValue> : IDictionary<TKey, TValue>, ICollection<KeyValuePair<TKey, TValue>>, IDictionary
 	{
 		public readonly TimeSpan? EntryExpiration;
@@ -25,7 +28,7 @@ namespace CommonCore.Cache
 
 		public ICollection<TValue> Values
 		{
-			get { return new CollectionWrapperView<TValue, KeyValuePair<TKey, TValue>>(this, kvp => kvp.Value); }
+			get { return this.Transform(kvp => kvp.Value); }
 		}
 
 		public TValue this[TKey key]
@@ -225,7 +228,7 @@ namespace CommonCore.Cache
 
 		IDictionaryEnumerator IDictionary.GetEnumerator()
 		{
-			return new DictionaryEnumeratorWrapper<TKey, TValue>(this);
+			return this.AsIDictionaryEnumerator();
 		}
 
 		public bool IsFixedSize
@@ -246,7 +249,7 @@ namespace CommonCore.Cache
 
 		ICollection IDictionary.Values
 		{
-			get { return new CollectionWrapperView<TValue, KeyValuePair<TKey, TValue>>(this, kvp => kvp.Value); }
+			get { return this.Transform(kvp => kvp.Value); }
 		}
 
 		object IDictionary.this[object key]

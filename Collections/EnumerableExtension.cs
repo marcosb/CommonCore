@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CommonCore.Collections
 {
-	public static class IEnumerableExtension
+	public static class EnumerableExtension
 	{
 		public static void CopyToArray<T>(this IEnumerable<T> enumerable, T[] destinationArray, int startIndex)
 		{

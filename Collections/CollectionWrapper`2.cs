@@ -6,12 +6,15 @@ using System.Text;
 
 namespace CommonCore.Collections
 {
-	public class CollectionWrapperView<T, TSource> : ICollection<T>, ICollection
+	public interface ITransformedCollection<T> : ICollection<T>, ICollection
+	{ }
+
+	public class CollectionWrapperView<T, TSource> : ITransformedCollection<T>
 	{
 		protected readonly ICollection<TSource> _Source;
 		protected readonly Func<TSource, T> _TransformToFn;
 
-		public CollectionWrapperView(ICollection<TSource> source, Func<TSource, T> transformToFn)
+		protected internal CollectionWrapperView(ICollection<TSource> source, Func<TSource, T> transformToFn)
 		{
 			_Source = source;
 			_TransformToFn = transformToFn;
@@ -116,11 +119,11 @@ namespace CommonCore.Collections
 		#endregion
 	}
 
-	public class CollectionWrapper<T, TSource> : CollectionWrapperView<T, TSource>
+	internal class CollectionWrapper<T, TSource> : CollectionWrapperView<T, TSource>
 	{
 		private readonly Func<T, TSource> _TransformFromFn;
 
-		public CollectionWrapper(ICollection<TSource> source, Func<T, TSource> transformFromFn, Func<TSource, T> transformToFn)
+		protected internal CollectionWrapper(ICollection<TSource> source, Func<TSource, T> transformToFn, Func<T, TSource> transformFromFn)
 			: base(source, transformToFn)
 		{
 			_TransformFromFn = transformFromFn;

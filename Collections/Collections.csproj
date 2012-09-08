@@ -41,7 +41,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DictionaryEnumeratorWrapper.cs" />
-    <Compile Include="IEnumerableExtension.cs" />
+    <Compile Include="CollectionExtension.cs" />
+    <Compile Include="DictionaryExtension.cs" />
+    <Compile Include="EnumerableExtension.cs" />
     <Compile Include="CollectionWrapper`2.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

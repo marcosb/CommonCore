@@ -107,11 +107,13 @@ namespace CommonCore.Cache
 			{
 				value = entryData.Data;
 				entryData.UtcLastUsed = DateTime.UtcNow;
+				return true;
 			}
 			else
+			{
 				value = default(TValue);
-
-			return result;
+				return false;
+			}
 		}
 		#endregion
 

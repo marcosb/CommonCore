@@ -44,31 +44,33 @@ namespace CommonCore.Cache
 			set
 			{
 				var newEntry = GetEntry(value);
-				var entry = _Entries.AddOrUpdate(key, (k) => newEntry, (k, oldData) => newEntry);
+				var existingEntry = _Entries.GetOrAdd(key, newEntry);
 
-				if (! Object.ReferenceEquals(entry, newEntry) && (entry != null))
-					entry.SetRemoved();
+				if (existingEntry != null)
+				{
+					// If the key already existed, mark the existing entry for removal & replace it
+					existingEntry.SetRemoved();
+
+					// We do a TryUpdate just in case someone beat us to the punch - if they did, then
+					// it's the equivalent of them having done a set immediately after us
+					if (!_Entries.TryUpdate(key, newEntry, existingEntry))
+						return;
+				}
+
 				TrackWrite(newEntry, key);
 			}
 		}
 
 		public void Add(TKey key, TValue value)
 		{
-			if (!_Entries.TryAdd(key, GetEntry(value)))
+			if (! TryAdd(key, value))
 				throw new ArgumentException();
-
-			if (_Entries.Count > MaxEntries)
-				Clean();
 		}
 
 		public bool TryAdd(TKey key, TValue value)
 		{
-			bool result = _Entries.TryAdd(key, GetEntry(value));
-
-			if ((!result) && (_Entries.Count > MaxEntries))
-				Clean();
-
-			return result;
+			TValue previousValue;
+			return GetOrAdd(key, value, out previousValue);
 		}
 
 		public bool ContainsKey(TKey key)
@@ -115,6 +117,39 @@ namespace CommonCore.Cache
 				return false;
 			}
 		}
+
+		/**
+		 * Gets the existing value if the key was present, or adds a new value if the key was not present.
+		 * 
+		 * If the value was added, returns true and sets existingValue = newValue.
+		 * 
+		 * If the value already existed, returns false and returns the existing value in existingValue.
+		 **/
+		public bool GetOrAdd(TKey key, TValue newValue, out TValue existingValue)
+		{
+			var newEntry = GetEntry(newValue);
+			var existingEntry = _Entries.GetOrAdd(key, newEntry);
+			if (existingEntry != null)
+			{
+				if (existingEntry.Expired)
+				{
+					EntriesAsCollection.Remove(new KeyValuePair<TKey, EntryData>(key, existingEntry));
+					existingEntry = _Entries.GetOrAdd(key, newEntry);
+				}
+
+				if (existingEntry != null)
+				{
+					existingValue = existingEntry.Data;
+					return false;
+				}
+			}
+
+			TrackWrite(newEntry, key);
+
+			existingValue = newValue;
+			return true;
+		}
+
 		#endregion
 
 		#region ICollection<KeyValuePair<TKey,TValue>> Members
@@ -314,6 +349,9 @@ namespace CommonCore.Cache
 
 		private void TrackWrite(EntryData newEntry, TKey key)
 		{
+			if (_Entries.Count > MaxEntries)
+				Clean();
+
 			_LastWrite.Enqueue(new KeyValuePair<TKey, EntryData>(key, newEntry));
 		}
 

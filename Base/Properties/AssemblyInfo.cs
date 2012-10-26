@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Base")]
+[assembly: AssemblyTitle("CommonCore Base")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Google")]
-[assembly: AssemblyProduct("Base")]
-[assembly: AssemblyCopyright("Copyright © Google 2012")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("CommonCore")]
+[assembly: AssemblyCopyright("Copyright © 2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

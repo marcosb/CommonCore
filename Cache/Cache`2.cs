@@ -46,7 +46,7 @@ namespace CommonCore.Cache
 				var newEntry = GetEntry(value);
 				var existingEntry = _Entries.GetOrAdd(key, newEntry);
 
-				if (existingEntry != null)
+				if (existingEntry != newEntry)
 				{
 					// If the key already existed, mark the existing entry for removal & replace it
 					existingEntry.SetRemoved();
@@ -121,15 +121,15 @@ namespace CommonCore.Cache
 		/**
 		 * Gets the existing value if the key was present, or adds a new value if the key was not present.
 		 * 
-		 * If the value was added, returns true and sets existingValue = newValue.
+		 * If the value was added, returns true and sets currentValue = newValue.
 		 * 
-		 * If the value already existed, returns false and returns the existing value in existingValue.
+		 * If the value already existed, returns false and returns the existing value in currentValue.
 		 **/
-		public bool GetOrAdd(TKey key, TValue newValue, out TValue existingValue)
+		public bool GetOrAdd(TKey key, TValue newValue, out TValue currentValue)
 		{
 			var newEntry = GetEntry(newValue);
 			var existingEntry = _Entries.GetOrAdd(key, newEntry);
-			if (existingEntry != null)
+			if (existingEntry != newEntry)
 			{
 				if (existingEntry.Expired)
 				{
@@ -137,16 +137,16 @@ namespace CommonCore.Cache
 					existingEntry = _Entries.GetOrAdd(key, newEntry);
 				}
 
-				if (existingEntry != null)
+				if (existingEntry != newEntry)
 				{
-					existingValue = existingEntry.Data;
+					currentValue = existingEntry.Data;
 					return false;
 				}
 			}
 
 			TrackWrite(newEntry, key);
 
-			existingValue = newValue;
+			currentValue = newValue;
 			return true;
 		}
 

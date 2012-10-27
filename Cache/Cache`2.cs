@@ -90,8 +90,7 @@ namespace CommonCore.Cache
 			bool result = _Entries.TryRemove(key, out entryData);
 			if (result)
 			{
-				value = entryData.Data;
-				if (entryData.Expired)
+				if (!entryData.GetData(out value))
 					result = false;
 				entryData.SetRemoved();
 			}
@@ -105,9 +104,8 @@ namespace CommonCore.Cache
 		{
 			EntryData entryData;
 			bool result = _Entries.TryGetValue(key, out entryData);
-			if (result && !entryData.Expired)
+			if (result && entryData.GetData(out value))
 			{
-				value = entryData.Data;
 				entryData.UtcLastUsed = DateTime.UtcNow;
 				return true;
 			}
@@ -131,17 +129,14 @@ namespace CommonCore.Cache
 			var existingEntry = _Entries.GetOrAdd(key, newEntry);
 			if (existingEntry != newEntry)
 			{
-				if (existingEntry.Expired)
+				while ((! existingEntry.GetData(out currentValue)) && (existingEntry != newEntry))
 				{
 					EntriesAsCollection.Remove(new KeyValuePair<TKey, EntryData>(key, existingEntry));
 					existingEntry = _Entries.GetOrAdd(key, newEntry);
 				}
 
 				if (existingEntry != newEntry)
-				{
-					currentValue = existingEntry.Data;
 					return false;
-				}
 			}
 
 			TrackWrite(newEntry, key);
@@ -358,7 +353,7 @@ namespace CommonCore.Cache
 		private void Clean()
 		{
 			KeyValuePair<TKey, EntryData> queued;
-			bool expiredEntries = _LastWrite.TryPeek(out queued) && (queued.Value.Expired || queued.Value.Removed);
+			bool expiredEntries = _LastWrite.TryPeek(out queued) && queued.Value.Expired;
 			while (expiredEntries || (_Entries.Count > MaxEntries))
 			{
 				// TODO: Ideally we'd have a queue where we could peek first, check if it's something we want,
@@ -367,7 +362,7 @@ namespace CommonCore.Cache
 				if (! _LastWrite.TryDequeue(out queued))
 					break;
 
-				expiredEntries = queued.Value.Expired || queued.Value.Removed;
+				expiredEntries = queued.Value.Expired;
 				EntriesAsCollection.Remove(queued);
 			}
 		}
@@ -382,7 +377,7 @@ namespace CommonCore.Cache
 			public TValue Data;
 			public readonly DateTime? UtcExpires;
 			public DateTime UtcLastUsed;
-			public bool Removed = false;
+			private bool _Removed = false;
 
 			public EntryData(TValue data, DateTime utcLastUsed, DateTime? utcExpires)
 			{
@@ -393,14 +388,34 @@ namespace CommonCore.Cache
 
 			public bool Expired
 			{
-				get { return (UtcExpires != null) && (UtcExpires.Value <= DateTime.UtcNow); }
+				get { return _Removed || ((UtcExpires != null) && (UtcExpires.Value <= DateTime.UtcNow)); }
 			}
 
 			public void SetRemoved()
 			{
-				Removed = true;
-				// Clear the data so it gets gc'ed
-				Data = default(TValue);
+				lock (this)
+				{
+					_Removed = true;
+					// Clear the data so it gets gc'ed
+					Data = default(TValue);
+				}
+			}
+
+			public bool GetData(out TValue data)
+			{
+				lock (this)
+				{
+					if (!Expired)
+					{
+						data = Data;
+						return true;
+					}
+					else
+					{
+						data = default(TValue);
+						return false;
+					}
+				}
 			}
 		}
 
